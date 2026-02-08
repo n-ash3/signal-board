@@ -29,13 +29,11 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
   const [topic, setTopic] = useState('');
   const [editingTopic, setEditingTopic] = useState(false);
   const [topicDraft, setTopicDraft] = useState('');
-  const [pinnedMessages, setPinnedMessages] = useState<string[]>([]);
-  const [showPinned, setShowPinned] = useState(false);
   const [username, setUsername] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
-  // Get current user's username for typing indicator
   useEffect(() => {
     if (user) {
       supabase.from('profiles').select('username').eq('user_id', user.id).single().then(({ data }) => {
@@ -46,26 +44,27 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
 
   const { startTyping, stopTyping } = useTypingBroadcast(channelId, username);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (instant = false) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
+    }
   };
 
-  // Mark channel as read
+  // Mark channel as read (no callback to parent to avoid loop)
   const markRead = useCallback(async () => {
     if (!user) return;
     await supabase.from('channel_reads').upsert(
       { channel_id: channelId, user_id: user.id, last_read_at: new Date().toISOString() },
       { onConflict: 'channel_id,user_id' }
     );
-    onMarkRead?.();
-  }, [channelId, user, onMarkRead]);
+  }, [channelId, user]);
 
   useEffect(() => {
+    isInitialLoad.current = true;
     fetchMessages();
     fetchTopic();
     markRead();
 
-    // Subscribe to new messages
     const channel = supabase
       .channel(`messages:${channelId}`)
       .on(
@@ -79,7 +78,6 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
         async (payload) => {
           if (payload.eventType === 'INSERT') {
             const newMsg = payload.new as Message;
-            // Only show top-level messages (no parent_id)
             if ((newMsg as any).parent_id) return;
             
             if (newMsg.user_id) {
@@ -106,8 +104,17 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
     };
   }, [channelId]);
 
+  // Auto-scroll: instant on initial load, smooth on new messages
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      if (isInitialLoad.current) {
+        // Use setTimeout to ensure DOM has rendered
+        setTimeout(() => scrollToBottom(true), 50);
+        isInitialLoad.current = false;
+      } else {
+        scrollToBottom(false);
+      }
+    }
   }, [messages]);
 
   const fetchTopic = async () => {
@@ -131,7 +138,7 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
       .from('messages')
       .select('*')
       .eq('channel_id', channelId)
-      .is('parent_id', null) // Only top-level messages
+      .is('parent_id', null)
       .order('created_at', { ascending: true })
       .limit(200);
 
@@ -173,23 +180,18 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
   return (
     <div className="flex h-full">
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Channel header */}
         <header className="px-5 py-3 border-b border-border shrink-0">
           <div className="flex items-center gap-2">
             <Hash className="h-5 w-5 text-muted-foreground shrink-0" />
             <h2 className="text-lg font-semibold text-foreground">{channelName}</h2>
-
-            {/* Pinned indicator */}
             <button
-              onClick={() => setShowPinned(!showPinned)}
+              onClick={() => {}}
               className="ml-auto p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
               title="Pinned messages"
             >
               <Pin className="h-4 w-4" />
             </button>
           </div>
-
-          {/* Topic */}
           <div className="mt-0.5 flex items-center gap-1 min-h-[20px]">
             {editingTopic ? (
               <div className="flex items-center gap-1 flex-1">
@@ -220,7 +222,6 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
           </div>
         </header>
 
-        {/* Messages */}
         <div ref={containerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -245,10 +246,7 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Typing indicator */}
         <TypingIndicator channelId={channelId} />
-
-        {/* Input */}
         <MessageInput
           onSend={handleSendMessage}
           channelName={channelName}
@@ -256,7 +254,6 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
         />
       </div>
 
-      {/* Thread panel */}
       {activeThread && (
         <ThreadView
           parentMessage={activeThread}

@@ -7,8 +7,8 @@ import { MessageSquare } from 'lucide-react';
 
 interface DMMessage {
   id: string;
-  dm_channel_id: string;
-  sender_id: string;
+  channel_id: string;
+  user_id: string;
   content: string;
   created_at: string;
   senderName?: string;
@@ -27,14 +27,19 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
   const [loading, setLoading] = useState(true);
   const [profileMap, setProfileMap] = useState<Record<string, { username: string; avatar_url: string | null }>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (instant = false) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
+    }
   };
 
   useEffect(() => {
+    isInitialLoad.current = true;
     fetchMessages();
 
+    // Subscribe to new DMs - use channel_id column
     const channel = supabase
       .channel(`dm:${dmChannelId}`)
       .on(
@@ -43,11 +48,23 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
           event: 'INSERT',
           schema: 'public',
           table: 'direct_messages',
-          filter: `dm_channel_id=eq.${dmChannelId}`,
+          filter: `channel_id=eq.${dmChannelId}`,
         },
         async (payload) => {
           const newMsg = payload.new as DMMessage;
-          const profile = profileMap[newMsg.sender_id];
+          // Fetch sender profile if not cached
+          let profile = profileMap[newMsg.user_id];
+          if (!profile) {
+            const { data } = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('user_id', newMsg.user_id)
+              .single();
+            if (data) {
+              profile = data;
+              setProfileMap(prev => ({ ...prev, [newMsg.user_id]: data }));
+            }
+          }
           setMessages(prev => [...prev, {
             ...newMsg,
             senderName: profile?.username || 'Unknown',
@@ -62,8 +79,16 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
     };
   }, [dmChannelId]);
 
+  // Auto-scroll
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      if (isInitialLoad.current) {
+        setTimeout(() => scrollToBottom(true), 50);
+        isInitialLoad.current = false;
+      } else {
+        scrollToBottom(false);
+      }
+    }
   }, [messages]);
 
   const fetchMessages = async () => {
@@ -71,12 +96,12 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
     const { data, error } = await supabase
       .from('direct_messages')
       .select('*')
-      .eq('dm_channel_id', dmChannelId)
+      .eq('channel_id', dmChannelId)
       .order('created_at', { ascending: true })
       .limit(200);
 
     if (!error && data) {
-      const senderIds = [...new Set(data.map(m => m.sender_id))];
+      const senderIds = [...new Set(data.map(m => m.user_id))];
       let pMap: Record<string, { username: string; avatar_url: string | null }> = {};
 
       if (senderIds.length > 0) {
@@ -92,8 +117,8 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
 
       setMessages(data.map(m => ({
         ...m,
-        senderName: pMap[m.sender_id]?.username || 'Unknown',
-        senderAvatar: pMap[m.sender_id]?.avatar_url || null,
+        senderName: pMap[m.user_id]?.username || 'Unknown',
+        senderAvatar: pMap[m.user_id]?.avatar_url || null,
       })));
     }
     setLoading(false);
@@ -102,8 +127,8 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
   const handleSendMessage = async (content: string) => {
     if (!user || !content.trim()) return;
     const { error } = await supabase.from('direct_messages').insert({
-      dm_channel_id: dmChannelId,
-      sender_id: user.id,
+      channel_id: dmChannelId,
+      user_id: user.id,
       content: content.trim(),
     });
     if (error) {
@@ -111,25 +136,11 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
     }
   };
 
-<<<<<<< HEAD
-=======
   const isGif = (content: string) => content.match(/\.(gif|webp)(\?|$)/i);
 
->>>>>>> 006281b (push em)
   return (
     <div className="flex flex-col h-full">
-      {/* DM Header */}
       <header className="px-5 py-3 border-b border-border flex items-center gap-3 shrink-0">
-<<<<<<< HEAD
-        <Avatar className="h-7 w-7">
-          {otherUserAvatar ? (
-            <AvatarImage src={otherUserAvatar} alt={otherUserName} />
-          ) : null}
-          <AvatarFallback className="bg-primary/20 text-primary text-xs">
-            {otherUserName.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-=======
         <div className="relative">
           <Avatar className="h-7 w-7">
             {otherUserAvatar ? (
@@ -140,11 +151,9 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
             </AvatarFallback>
           </Avatar>
         </div>
->>>>>>> 006281b (push em)
         <h2 className="text-lg font-semibold text-foreground">{otherUserName}</h2>
       </header>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -173,15 +182,11 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
                     <span className="text-sm font-semibold text-foreground">{msg.senderName}</span>
                     <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">{time}</span>
                   </div>
-<<<<<<< HEAD
-                  <p className="text-sm text-foreground/85 leading-relaxed">{msg.content}</p>
-=======
                   {isGif(msg.content) ? (
                     <img src={msg.content} alt="GIF" className="mt-1 max-w-[300px] max-h-[250px] rounded-lg" loading="lazy" />
                   ) : (
                     <p className="text-sm text-foreground/85 leading-relaxed">{msg.content}</p>
                   )}
->>>>>>> 006281b (push em)
                 </div>
               </div>
             );
@@ -190,7 +195,6 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <MessageInput onSend={handleSendMessage} channelName={otherUserName} />
     </div>
   );
