@@ -28,6 +28,10 @@ const WorkspacePage = () => {
   const [view, setView] = useState<'chat' | 'kanban' | 'members' | 'dm'>('chat');
   const [workspaceName, setWorkspaceName] = useState('');
   const [activeDm, setActiveDm] = useState<DMChannelInfo | null>(null);
+<<<<<<< HEAD
+=======
+  const [refreshKey, setRefreshKey] = useState(0);
+>>>>>>> 006281b (push em)
 
   useEffect(() => {
     if (!loading && !user) navigate('/auth');
@@ -112,9 +116,11 @@ const WorkspacePage = () => {
       <main className="flex-1 flex flex-col overflow-hidden">
         {view === 'chat' && activeChannelId && (
           <ChannelView
+            key={activeChannelId}
             channelId={activeChannelId}
             channelName={channels.find(c => c.id === activeChannelId)?.name || ''}
             workspaceId={workspaceId}
+            
           />
         )}
         {view === 'kanban' && (

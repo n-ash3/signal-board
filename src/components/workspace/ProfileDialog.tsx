@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -99,10 +100,26 @@ const ProfileDialog = () => {
       setLoading(false);
     }
   };
+=======
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { User } from 'lucide-react';
+
+export default function ProfileDialog() {
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
+  const avatarUrl = user?.user_metadata?.avatar_url;
+>>>>>>> 006281b (push em)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
+<<<<<<< HEAD
         <button className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
           <Avatar className="h-7 w-7">
             {avatarUrl ? (
@@ -186,10 +203,41 @@ const ProfileDialog = () => {
           <Button onClick={handleSave} disabled={loading || !username.trim()} className="w-full">
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
+=======
+        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-slate-300 hover:text-white hover:bg-white/10">
+          <Avatar className="h-6 w-6">
+            <AvatarImage src={avatarUrl} />
+            <AvatarFallback className="bg-indigo-600 text-white text-xs">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="truncate">{displayName}</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-slate-800 border-slate-700 text-white">
+        <DialogHeader>
+          <DialogTitle>Profile</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col items-center gap-4 py-4">
+          <Avatar className="h-20 w-20">
+            <AvatarImage src={avatarUrl} />
+            <AvatarFallback className="bg-indigo-600 text-white text-2xl">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="text-center">
+            <p className="text-lg font-semibold">{displayName}</p>
+            <p className="text-sm text-slate-400">{user?.email}</p>
+          </div>
+>>>>>>> 006281b (push em)
         </div>
       </DialogContent>
     </Dialog>
   );
+<<<<<<< HEAD
 };
 
 export default ProfileDialog;
+=======
+}
+>>>>>>> 006281b (push em)

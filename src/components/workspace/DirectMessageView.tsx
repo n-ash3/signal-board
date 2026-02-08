@@ -111,10 +111,16 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
     }
   };
 
+<<<<<<< HEAD
+=======
+  const isGif = (content: string) => content.match(/\.(gif|webp)(\?|$)/i);
+
+>>>>>>> 006281b (push em)
   return (
     <div className="flex flex-col h-full">
       {/* DM Header */}
       <header className="px-5 py-3 border-b border-border flex items-center gap-3 shrink-0">
+<<<<<<< HEAD
         <Avatar className="h-7 w-7">
           {otherUserAvatar ? (
             <AvatarImage src={otherUserAvatar} alt={otherUserName} />
@@ -123,6 +129,18 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
             {otherUserName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
+=======
+        <div className="relative">
+          <Avatar className="h-7 w-7">
+            {otherUserAvatar ? (
+              <AvatarImage src={otherUserAvatar} alt={otherUserName} />
+            ) : null}
+            <AvatarFallback className="bg-primary/20 text-primary text-xs">
+              {otherUserName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+>>>>>>> 006281b (push em)
         <h2 className="text-lg font-semibold text-foreground">{otherUserName}</h2>
       </header>
 
@@ -155,7 +173,15 @@ const DirectMessageView = ({ dmChannelId, otherUserName, otherUserAvatar }: Dire
                     <span className="text-sm font-semibold text-foreground">{msg.senderName}</span>
                     <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">{time}</span>
                   </div>
+<<<<<<< HEAD
                   <p className="text-sm text-foreground/85 leading-relaxed">{msg.content}</p>
+=======
+                  {isGif(msg.content) ? (
+                    <img src={msg.content} alt="GIF" className="mt-1 max-w-[300px] max-h-[250px] rounded-lg" loading="lazy" />
+                  ) : (
+                    <p className="text-sm text-foreground/85 leading-relaxed">{msg.content}</p>
+                  )}
+>>>>>>> 006281b (push em)
                 </div>
               </div>
             );
