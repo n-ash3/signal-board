@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-import { Zap } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-=======
 import { useState, useRef, useEffect } from 'react';
-import { Zap, MessageSquare, Smile, MoreHorizontal, Pencil, Trash2, Pin, Check, X } from 'lucide-react';
+import { Zap, MessageSquare, Smile, MoreHorizontal, Pencil, Trash2, Check, X } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import EmojiPicker, { QuickReactionBar } from './EmojiPicker';
->>>>>>> 006281b (push em)
 import type { Tables } from '@/integrations/supabase/types';
 
 type Message = Tables<'messages'>;
@@ -159,13 +154,6 @@ const MessageItem = ({ message, currentUserId, onOpenThread }: MessageItemProps)
   }
 
   return (
-<<<<<<< HEAD
-    <div className="flex items-start gap-3 py-1.5 px-2 rounded hover:bg-accent/30 transition-colors group">
-      <Avatar className="h-8 w-8 shrink-0 mt-0.5">
-        {avatarUrl ? (
-          <AvatarImage src={avatarUrl} alt={username} />
-        ) : null}
-=======
     <div
       className="relative flex items-start gap-3 py-1.5 px-2 rounded hover:bg-accent/30 transition-colors group"
       onMouseEnter={() => setShowActions(true)}
@@ -173,15 +161,11 @@ const MessageItem = ({ message, currentUserId, onOpenThread }: MessageItemProps)
     >
       <Avatar className="h-8 w-8 shrink-0 mt-0.5">
         {avatarUrl ? <AvatarImage src={avatarUrl} alt={username} /> : null}
->>>>>>> 006281b (push em)
         <AvatarFallback className="bg-primary/20 text-primary text-xs">
           {username.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
-<<<<<<< HEAD
-=======
 
->>>>>>> 006281b (push em)
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
           <span className="text-sm font-semibold text-foreground">{username}</span>
