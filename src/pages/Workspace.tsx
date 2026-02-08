@@ -6,9 +6,18 @@ import { toast } from 'sonner';
 import WorkspaceSidebar from '@/components/workspace/WorkspaceSidebar';
 import ChannelView from '@/components/workspace/ChannelView';
 import KanbanBoard from '@/components/workspace/KanbanBoard';
+import MembersDirectory from '@/components/workspace/MembersDirectory';
+import DirectMessageView from '@/components/workspace/DirectMessageView';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Channel = Tables<'channels'>;
+
+interface DMChannelInfo {
+  id: string;
+  otherUserId: string;
+  otherUserName: string;
+  otherUserAvatar: string | null;
+}
 
 const WorkspacePage = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -16,8 +25,9 @@ const WorkspacePage = () => {
   const navigate = useNavigate();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
-  const [view, setView] = useState<'chat' | 'kanban'>('chat');
+  const [view, setView] = useState<'chat' | 'kanban' | 'members' | 'dm'>('chat');
   const [workspaceName, setWorkspaceName] = useState('');
+  const [activeDm, setActiveDm] = useState<DMChannelInfo | null>(null);
 
   useEffect(() => {
     if (!loading && !user) navigate('/auth');
@@ -66,6 +76,12 @@ const WorkspacePage = () => {
   const handleChannelCreated = (channel: Channel) => {
     setChannels(prev => [...prev, channel]);
     setActiveChannelId(channel.id);
+    setView('chat');
+  };
+
+  const handleSelectDm = (dmChannel: DMChannelInfo) => {
+    setActiveDm(dmChannel);
+    setView('dm');
   };
 
   if (loading) {
@@ -86,8 +102,11 @@ const WorkspacePage = () => {
         channels={channels}
         activeChannelId={activeChannelId}
         view={view}
+        activeDmChannelId={activeDm?.id || null}
         onSelectChannel={(id) => { setActiveChannelId(id); setView('chat'); }}
         onSelectKanban={() => setView('kanban')}
+        onSelectMembers={() => setView('members')}
+        onSelectDm={handleSelectDm}
         onChannelCreated={handleChannelCreated}
       />
       <main className="flex-1 flex flex-col overflow-hidden">
@@ -100,6 +119,16 @@ const WorkspacePage = () => {
         )}
         {view === 'kanban' && (
           <KanbanBoard workspaceId={workspaceId} />
+        )}
+        {view === 'members' && (
+          <MembersDirectory workspaceId={workspaceId} />
+        )}
+        {view === 'dm' && activeDm && (
+          <DirectMessageView
+            dmChannelId={activeDm.id}
+            otherUserName={activeDm.otherUserName}
+            otherUserAvatar={activeDm.otherUserAvatar}
+          />
         )}
       </main>
     </div>

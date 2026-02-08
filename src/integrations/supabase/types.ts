@@ -49,6 +49,70 @@ export type Database = {
           },
         ]
       }
+      direct_message_channels: {
+        Row: {
+          created_at: string
+          id: string
+          user1_id: string
+          user2_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user1_id: string
+          user2_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user1_id?: string
+          user2_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_message_channels_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          dm_channel_id: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          dm_channel_id: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          dm_channel_id?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_dm_channel_id_fkey"
+            columns: ["dm_channel_id"]
+            isOneToOne: false
+            referencedRelation: "direct_message_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           channel_id: string
@@ -87,6 +151,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
           id: string
           user_id: string
@@ -94,6 +159,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           id?: string
           user_id: string
@@ -101,6 +167,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           id?: string
           user_id?: string
@@ -148,6 +215,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tasks_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_invitations: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string
+          invited_email: string
+          status: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          status?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          status?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_invitations_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
