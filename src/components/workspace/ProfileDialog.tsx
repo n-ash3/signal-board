@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { Camera, User } from 'lucide-react';
+import { Camera } from 'lucide-react';
 
 const ProfileDialog = () => {
   const { user } = useAuth();
@@ -100,26 +99,10 @@ const ProfileDialog = () => {
       setLoading(false);
     }
   };
-=======
-import { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
-
-export default function ProfileDialog() {
-  const { user } = useAuth();
-  const [open, setOpen] = useState(false);
-
-  const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'User';
-  const avatarUrl = user?.user_metadata?.avatar_url;
->>>>>>> 006281b (push em)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-<<<<<<< HEAD
         <button className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity">
           <Avatar className="h-7 w-7">
             {avatarUrl ? (
@@ -137,107 +120,61 @@ export default function ProfileDialog() {
           <DialogTitle className="text-foreground">Edit Profile</DialogTitle>
         </DialogHeader>
         <div className="space-y-5 pt-2">
-          {/* Avatar */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-              <Avatar className="h-20 w-20">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Avatar className="h-16 w-16">
                 {avatarUrl ? (
                   <AvatarImage src={avatarUrl} alt={username} />
                 ) : null}
                 <AvatarFallback className="bg-primary/20 text-primary text-xl">
-                  {username?.charAt(0)?.toUpperCase() || <User className="h-8 w-8" />}
+                  {username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="h-5 w-5 text-white" />
-              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90"
+                disabled={uploading}
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarUpload}
-            />
-            <p className="text-xs text-muted-foreground">
-              {uploading ? 'Uploading...' : 'Click to change photo'}
-            </p>
+            <div className="flex-1">
+              <Label className="text-foreground">Username</Label>
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="bg-input border-border text-foreground mt-1"
+                maxLength={50}
+              />
+            </div>
           </div>
 
-          {/* Email (read-only) */}
-          <div className="space-y-2">
-            <Label className="text-foreground">Email</Label>
-            <Input
-              value={user?.email || ''}
-              disabled
-              className="bg-input border-border text-muted-foreground"
-            />
-          </div>
-
-          {/* Username */}
-          <div className="space-y-2">
-            <Label className="text-foreground">Username</Label>
-            <Input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Your username"
-              className="bg-input border-border text-foreground"
-              maxLength={50}
-            />
-          </div>
-
-          {/* Bio */}
-          <div className="space-y-2">
+          <div>
             <Label className="text-foreground">Bio</Label>
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell us about yourself..."
-              className="bg-input border-border text-foreground resize-none"
+              className="bg-input border-border text-foreground mt-1 resize-none"
               rows={3}
-              maxLength={200}
+              maxLength={160}
             />
-            <p className="text-xs text-muted-foreground text-right">{bio.length}/200</p>
+            <p className="text-xs text-muted-foreground mt-1">{bio.length}/160</p>
           </div>
 
           <Button onClick={handleSave} disabled={loading || !username.trim()} className="w-full">
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
-=======
-        <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-slate-300 hover:text-white hover:bg-white/10">
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-indigo-600 text-white text-xs">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="truncate">{displayName}</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white">
-        <DialogHeader>
-          <DialogTitle>Profile</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col items-center gap-4 py-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-indigo-600 text-white text-2xl">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="text-center">
-            <p className="text-lg font-semibold">{displayName}</p>
-            <p className="text-sm text-slate-400">{user?.email}</p>
-          </div>
->>>>>>> 006281b (push em)
         </div>
       </DialogContent>
     </Dialog>
   );
-<<<<<<< HEAD
 };
 
 export default ProfileDialog;
-=======
-}
->>>>>>> 006281b (push em)
