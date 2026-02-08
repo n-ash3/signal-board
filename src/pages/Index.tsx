@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Plus, Zap, LogOut, Hash } from 'lucide-react';
+import PendingInvitations from '@/components/workspace/PendingInvitations';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Workspace = Tables<'workspaces'>;
@@ -47,7 +48,6 @@ const Index = () => {
     if (!newWorkspaceName.trim() || !user) return;
     setIsCreating(true);
     try {
-      // Create workspace
       const { data: workspace, error: wsError } = await supabase
         .from('workspaces')
         .insert({ name: newWorkspaceName.trim(), created_by: user.id })
@@ -56,14 +56,12 @@ const Index = () => {
 
       if (wsError) throw wsError;
 
-      // Add creator as member
       const { error: memberError } = await supabase
         .from('workspace_members')
         .insert({ workspace_id: workspace.id, user_id: user.id, role: 'owner' });
 
       if (memberError) throw memberError;
 
-      // Create default #general channel
       const { error: channelError } = await supabase
         .from('channels')
         .insert({
@@ -120,6 +118,9 @@ const Index = () => {
           transition={{ duration: 0.4 }}
           className="space-y-8"
         >
+          {/* Pending Invitations */}
+          <PendingInvitations onAccepted={fetchWorkspaces} />
+
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-foreground">Your Workspaces</h2>

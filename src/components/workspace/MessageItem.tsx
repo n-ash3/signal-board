@@ -1,4 +1,5 @@
 import { Zap } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Message = Tables<'messages'>;
@@ -15,6 +16,7 @@ interface MessageItemProps {
 const MessageItem = ({ message, currentUserId }: MessageItemProps) => {
   const isSignal = message.is_signal;
   const username = message.profiles?.username || 'Unknown';
+  const avatarUrl = message.profiles?.avatar_url || null;
   const time = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   if (isSignal) {
@@ -36,9 +38,14 @@ const MessageItem = ({ message, currentUserId }: MessageItemProps) => {
 
   return (
     <div className="flex items-start gap-3 py-1.5 px-2 rounded hover:bg-accent/30 transition-colors group">
-      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-medium shrink-0 mt-0.5">
-        {username.charAt(0).toUpperCase()}
-      </div>
+      <Avatar className="h-8 w-8 shrink-0 mt-0.5">
+        {avatarUrl ? (
+          <AvatarImage src={avatarUrl} alt={username} />
+        ) : null}
+        <AvatarFallback className="bg-primary/20 text-primary text-xs">
+          {username.charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
           <span className="text-sm font-semibold text-foreground">{username}</span>
