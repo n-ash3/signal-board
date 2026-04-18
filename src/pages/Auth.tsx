@@ -45,6 +45,13 @@ const Auth = () => {
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Try logging in.');
+          } else if (error.message.toLowerCase().includes('email') && error.message.toLowerCase().includes('invalid')) {
+            toast.error('Please use a valid email address.');
+          } else if (
+            error.message.toLowerCase().includes('redirect') ||
+            error.message.toLowerCase().includes('unprocessable')
+          ) {
+            toast.error('Auth redirect URL is not allowed. Update Supabase Auth URL settings and try again.');
           } else {
             toast.error(error.message);
           }

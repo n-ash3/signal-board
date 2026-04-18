@@ -8,6 +8,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    allowedHosts: [
+      ".cursorvm.com",
+      ".agent.cm.dev",
+      "localhost",
+      "127.0.0.1",
+    ],
     hmr: {
       overlay: false,
     },

@@ -13,6 +13,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getEmailRedirectUrl = () => {
+  const configuredRedirect = import.meta.env.VITE_AUTH_EMAIL_REDIRECT_URL as string | undefined;
+  if (configuredRedirect && configuredRedirect.trim()) {
+    return configuredRedirect.trim();
+  }
+
+  // Forwarded preview hosts are often not whitelisted in Supabase auth settings.
+  // Fall back to no redirect in that case so signup does not fail with 422.
+  const { hostname, origin } = window.location;
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+  return isLocalHost ? `${origin}/` : undefined;
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -37,21 +50,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, username: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: { username },
-      },
-    });
-    return { error: error as Error | null };
+    try {
+      const emailRedirectTo = getEmailRedirectUrl();
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          ...(emailRedirectTo ? { emailRedirectTo } : {}),
+          data: { username: username.trim() },
+        },
+      });
+      return { error: error as Error | null };
+    } catch (err: any) {
+      return { error: new Error(err?.message || 'Signup failed') };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      return { error: error as Error | null };
+    } catch (err: any) {
+      return { error: new Error(err?.message || 'Sign in failed') };
+    }
   };
 
   const signOut = async () => {
