@@ -9,6 +9,7 @@ import KanbanBoard from '@/components/workspace/KanbanBoard';
 import MembersDirectory from '@/components/workspace/MembersDirectory';
 import GitSyncCard from '@/components/workspace/GitSyncCard';
 import DirectMessageView from '@/components/workspace/DirectMessageView';
+import { useWorkspaceGitSignals } from '@/hooks/useWorkspaceGitSignals';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Channel = Tables<'channels'>;
@@ -29,6 +30,9 @@ const WorkspacePage = () => {
   const [view, setView] = useState<'chat' | 'kanban' | 'members' | 'integrations' | 'dm'>('chat');
   const [workspaceName, setWorkspaceName] = useState('');
   const [activeDm, setActiveDm] = useState<DMChannelInfo | null>(null);
+
+  // Keep git commit sync running while users are active in a workspace.
+  useWorkspaceGitSignals(workspaceId, { autoSync: true });
 
   useEffect(() => {
     if (!loading && !user) navigate('/auth');

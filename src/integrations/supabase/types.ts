@@ -21,6 +21,7 @@ export type Database = {
           id: string
           is_default: boolean
           name: string
+          topic: string | null
           workspace_id: string
         }
         Insert: {
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           name: string
+          topic?: string | null
           workspace_id: string
         }
         Update: {
@@ -37,6 +39,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           name?: string
+          topic?: string | null
           workspace_id?: string
         }
         Relationships: [
@@ -85,28 +88,28 @@ export type Database = {
         Row: {
           content: string
           created_at: string
-          dm_channel_id: string
+          channel_id: string
           id: string
-          sender_id: string
+          user_id: string
         }
         Insert: {
           content: string
           created_at?: string
-          dm_channel_id: string
+          channel_id: string
           id?: string
-          sender_id: string
+          user_id: string
         }
         Update: {
           content?: string
           created_at?: string
-          dm_channel_id?: string
+          channel_id?: string
           id?: string
-          sender_id?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "direct_messages_dm_channel_id_fkey"
-            columns: ["dm_channel_id"]
+            foreignKeyName: "direct_messages_channel_id_fkey"
+            columns: ["channel_id"]
             isOneToOne: false
             referencedRelation: "direct_message_channels"
             referencedColumns: ["id"]
@@ -118,24 +121,33 @@ export type Database = {
           channel_id: string
           content: string
           created_at: string
+          deleted_at: string | null
+          edited_at: string | null
           id: string
           is_signal: boolean
+          parent_id: string | null
           user_id: string | null
         }
         Insert: {
           channel_id: string
           content: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           is_signal?: boolean
+          parent_id?: string | null
           user_id?: string | null
         }
         Update: {
           channel_id?: string
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
           is_signal?: boolean
+          parent_id?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -282,6 +294,110 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_git_repos: {
+        Row: {
+          branch: string
+          created_at: string
+          created_by: string
+          enabled: boolean
+          id: string
+          last_seen_commit_sha: string | null
+          owner: string
+          provider: string
+          repo: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          branch?: string
+          created_at?: string
+          created_by: string
+          enabled?: boolean
+          id?: string
+          last_seen_commit_sha?: string | null
+          owner: string
+          provider?: string
+          repo: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          created_by?: string
+          enabled?: boolean
+          id?: string
+          last_seen_commit_sha?: string | null
+          owner?: string
+          provider?: string
+          repo?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_git_repos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_commit_events: {
+        Row: {
+          author_name: string
+          commit_message: string
+          commit_sha: string
+          commit_url: string
+          committed_at: string
+          created_at: string
+          created_by: string
+          git_repo_id: string
+          id: string
+          workspace_id: string
+        }
+        Insert: {
+          author_name: string
+          commit_message: string
+          commit_sha: string
+          commit_url: string
+          committed_at: string
+          created_at?: string
+          created_by: string
+          git_repo_id: string
+          id?: string
+          workspace_id: string
+        }
+        Update: {
+          author_name?: string
+          commit_message?: string
+          commit_sha?: string
+          commit_url?: string
+          committed_at?: string
+          created_at?: string
+          created_by?: string
+          git_repo_id?: string
+          id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_commit_events_git_repo_id_fkey"
+            columns: ["git_repo_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_git_repos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_commit_events_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"

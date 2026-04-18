@@ -361,7 +361,9 @@ export function useAudioCall({ roomId, username, avatarUrl = null }: UseAudioCal
 
   useEffect(() => {
     return () => {
-      void leaveCallRef.current();
+      if (signalChannelRef.current || localStreamRef.current || peersRef.current.size > 0) {
+        void leaveCallRef.current();
+      }
     };
   }, []);
 
