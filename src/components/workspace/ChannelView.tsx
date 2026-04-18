@@ -5,7 +5,8 @@ import MessageInput from './MessageInput';
 import MessageItem from './MessageItem';
 import ThreadView from './ThreadView';
 import TypingIndicator, { useTypingBroadcast } from './TypingIndicator';
-import { Hash, Pin, Pencil, X, Check } from 'lucide-react';
+import { Hash, Pin, Pencil, X, Check, Phone, PhoneOff, Mic, MicOff } from 'lucide-react';
+import { useAudioCall } from '@/hooks/useAudioCall';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Message = Tables<'messages'>;
@@ -30,19 +31,35 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
   const [editingTopic, setEditingTopic] = useState(false);
   const [topicDraft, setTopicDraft] = useState('');
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
     if (user) {
-      supabase.from('profiles').select('username').eq('user_id', user.id).single().then(({ data }) => {
+      supabase.from('profiles').select('username, avatar_url').eq('user_id', user.id).single().then(({ data }) => {
         if (data) setUsername(data.username);
+        if (data) setAvatarUrl(data.avatar_url);
       });
     }
   }, [user]);
 
   const { startTyping, stopTyping } = useTypingBroadcast(channelId, username);
+  const {
+    participants,
+    isInCall,
+    isJoining,
+    isMicMuted,
+    error: audioError,
+    joinCall,
+    leaveCall,
+    toggleMic,
+  } = useAudioCall({
+    roomId: `workspace-${workspaceId}-channel-${channelId}`,
+    username,
+    avatarUrl,
+  });
 
   const scrollToBottom = (instant = false) => {
     if (messagesEndRef.current) {
@@ -184,9 +201,41 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
           <div className="flex items-center gap-2">
             <Hash className="h-5 w-5 text-muted-foreground shrink-0" />
             <h2 className="text-lg font-semibold text-foreground">{channelName}</h2>
+            <div className="ml-auto flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">
+                {participants.length > 0 ? `${participants.length} in call` : 'No active call'}
+              </span>
+              {isInCall ? (
+                <>
+                  <button
+                    onClick={() => void toggleMic()}
+                    className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+                    title={isMicMuted ? 'Unmute microphone' : 'Mute microphone'}
+                  >
+                    {isMicMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </button>
+                  <button
+                    onClick={() => void leaveCall()}
+                    className="p-1 rounded text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                    title="Leave audio call"
+                  >
+                    <PhoneOff className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => void joinCall()}
+                  disabled={isJoining}
+                  className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors disabled:opacity-50"
+                  title="Join audio call"
+                >
+                  <Phone className="h-4 w-4" />
+                </button>
+              )}
+            </div>
             <button
               onClick={() => {}}
-              className="ml-auto p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
               title="Pinned messages"
             >
               <Pin className="h-4 w-4" />
@@ -220,6 +269,11 @@ const ChannelView = ({ channelId, channelName, workspaceId, onMarkRead }: Channe
               </button>
             )}
           </div>
+          {audioError && (
+            <p className="mt-1 text-[11px] text-red-400">
+              Audio call issue: {audioError}
+            </p>
+          )}
         </header>
 
         <div ref={containerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-1">

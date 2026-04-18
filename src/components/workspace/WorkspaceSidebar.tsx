@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from 'sonner';
-import { Hash, Plus, LayoutDashboard, ArrowLeft, LogOut, Users, Search } from 'lucide-react';
+import { Hash, Plus, LayoutDashboard, ArrowLeft, LogOut, Users, Search, Plug } from 'lucide-react';
 import ProfileDialog from './ProfileDialog';
 import InviteMemberDialog from './InviteMemberDialog';
 import type { Tables } from '@/integrations/supabase/types';
@@ -32,11 +32,12 @@ interface WorkspaceSidebarProps {
   workspaceName: string;
   channels: Channel[];
   activeChannelId: string | null;
-  view: 'chat' | 'kanban' | 'members' | 'dm';
+  view: 'chat' | 'kanban' | 'members' | 'integrations' | 'dm';
   activeDmChannelId: string | null;
   onSelectChannel: (id: string) => void;
   onSelectKanban: () => void;
   onSelectMembers: () => void;
+  onSelectIntegrations: () => void;
   onSelectDm: (dmChannel: DMChannelInfo) => void;
   onChannelCreated: (channel: Channel) => void;
 }
@@ -51,6 +52,7 @@ const WorkspaceSidebar = ({
   onSelectChannel,
   onSelectKanban,
   onSelectMembers,
+  onSelectIntegrations,
   onSelectDm,
   onChannelCreated,
 }: WorkspaceSidebarProps) => {
@@ -65,7 +67,6 @@ const WorkspaceSidebar = ({
   const [dmDialogOpen, setDmDialogOpen] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState<UnreadCounts>({});
   const [searchQuery, setSearchQuery] = useState('');
-  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     if (user && workspaceId) {
@@ -327,6 +328,19 @@ const WorkspaceSidebar = ({
         >
           <Users className="h-4 w-4 shrink-0" />
           <span>Members</span>
+        </button>
+
+        {/* Integrations */}
+        <button
+          onClick={onSelectIntegrations}
+          className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-sm transition-colors ${
+            view === 'integrations'
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+              : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+          }`}
+        >
+          <Plug className="h-4 w-4 shrink-0" />
+          <span>Integrations</span>
         </button>
 
         {/* Channels section */}

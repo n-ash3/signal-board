@@ -7,6 +7,7 @@ import WorkspaceSidebar from '@/components/workspace/WorkspaceSidebar';
 import ChannelView from '@/components/workspace/ChannelView';
 import KanbanBoard from '@/components/workspace/KanbanBoard';
 import MembersDirectory from '@/components/workspace/MembersDirectory';
+import GitSyncCard from '@/components/workspace/GitSyncCard';
 import DirectMessageView from '@/components/workspace/DirectMessageView';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -25,7 +26,7 @@ const WorkspacePage = () => {
   const navigate = useNavigate();
   const [channels, setChannels] = useState<Channel[]>([]);
   const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
-  const [view, setView] = useState<'chat' | 'kanban' | 'members' | 'dm'>('chat');
+  const [view, setView] = useState<'chat' | 'kanban' | 'members' | 'integrations' | 'dm'>('chat');
   const [workspaceName, setWorkspaceName] = useState('');
   const [activeDm, setActiveDm] = useState<DMChannelInfo | null>(null);
 
@@ -106,6 +107,7 @@ const WorkspacePage = () => {
         onSelectChannel={(id) => { setActiveChannelId(id); setView('chat'); }}
         onSelectKanban={() => setView('kanban')}
         onSelectMembers={() => setView('members')}
+        onSelectIntegrations={() => setView('integrations')}
         onSelectDm={handleSelectDm}
         onChannelCreated={handleChannelCreated}
       />
@@ -123,6 +125,14 @@ const WorkspacePage = () => {
         )}
         {view === 'members' && (
           <MembersDirectory workspaceId={workspaceId} />
+        )}
+        {view === 'integrations' && (
+          <div className="h-full overflow-y-auto p-5">
+            <div className="mx-auto max-w-3xl space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Integrations</h2>
+              <GitSyncCard workspaceId={workspaceId} />
+            </div>
+          </div>
         )}
         {view === 'dm' && activeDm && (
           <DirectMessageView
